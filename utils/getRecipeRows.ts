@@ -142,6 +142,7 @@ export default function getRecipeRows({
   const saltWeight = flourWeight * (SALT_BP / 100.0);
   const yeastWeight = flourWeight * (yeastBp / 100.0);
   const oilWeight = flourWeight * (oilBP / 100.0);
+  const maltWeight = useMalt ? 0.02 * flourWeight : 0;
 
   let starterWeight = 0;
   let starterFlourWeight = 0;
@@ -297,9 +298,17 @@ export default function getRecipeRows({
 
   finalRow.rows.push({
     item: "Flour",
-    weightG: asGrams(flourWeight - starterFlourWeight),
+    weightG: asGrams(flourWeight - starterFlourWeight - maltWeight),
     bakersPercent: asBakersPercent(100),
   });
+
+  if (maltWeight) {
+    finalRow.rows.push({
+      item: "Diastatic malt",
+      weightG: asGrams(maltWeight),
+      bakersPercent: asBakersPercent((100 * maltWeight) / flourWeight),
+    });
+  }
 
   rows.push(finalRow);
 
