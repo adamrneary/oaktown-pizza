@@ -14,6 +14,12 @@ export enum Yeast {
   Levain = "Levain Culture",
 }
 
+export enum Water {
+  Cold = 40,
+  Room = 68,
+  Warm = 80,
+}
+
 // We leave a little dough behind in the tub.
 // This is the planned overage to account for this
 const FUDGE_FACTOR = 1.01;
@@ -87,6 +93,16 @@ function getYeastBP(yeastType, nightsAging, starter) {
   const baseYeast =
     BASE_YEAST_VOLUME[starter === Starter.Levain ? Yeast.Levain : yeastType];
   return baseYeast + baseYeast * 0.1 * nightsAging;
+}
+
+function getWaterTemp(yeastWater, nightsAging, starter) {
+  // If there is warm water elsewhere…chill it out
+  if (yeastWater) return Water.Cold;
+
+  // If we are doing this the same day, let it be room temp
+  if (nightsAging === 0 || starter === Starter.Levain) return Water.Room;
+
+  return Water.Cold;
 }
 
 type Inputs = {
@@ -165,7 +181,7 @@ export default function getRecipeRows({
           bakersPercent: asBakersPercent(recipe.starterLevain),
         },
         {
-          item: "Water at 90°",
+          item: `Water at ${Water.Warm}°`,
           weightG: asGrams(starterWaterWeight),
           bakersPercent: asBakersPercent(recipe.starterHydration),
         },
@@ -201,7 +217,7 @@ export default function getRecipeRows({
           ),
         },
         {
-          item: "Water at 90°",
+          item: `Water at ${Water.Warm}°`,
           weightG: asGrams(starterWaterWeight),
           bakersPercent: asBakersPercent(recipe.starterHydration),
         },
@@ -232,7 +248,7 @@ export default function getRecipeRows({
           ),
         },
         {
-          item: "Water at 85°",
+          item: `Water at ${Water.Warm}°`,
           weightG: asGrams(yeastWater),
           bakersPercent: asBakersPercent((100 * yeastWater) / flourWeight),
         },
@@ -254,7 +270,7 @@ export default function getRecipeRows({
           )} and leave at room temperature for 6-8 hours for secondary fermentation.`,
     rows: [
       {
-        item: yeastWater ? "Water, Chilled" : "Water at 90°",
+        item: `Water at ${getWaterTemp(yeastWater, nightsAging, starter)}°`,
         weightG: asGrams(waterWeight - yeastWater - starterWaterWeight),
         bakersPercent: asBakersPercent(
           (100 * (waterWeight - yeastWater)) / flourWeight
