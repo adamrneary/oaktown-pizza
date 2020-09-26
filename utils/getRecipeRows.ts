@@ -10,7 +10,7 @@ export enum Starter {
 export enum Yeast {
   Active = "Active Dry Yeast",
   Instant = "Instant Yeast",
-  Fresh = "Fresh (Brewer's Yeast",
+  Fresh = "Fresh Yeast",
   Levain = "Levain Culture",
 }
 
@@ -143,11 +143,11 @@ export default function getRecipeRows({
   const yeastWeight = flourWeight * (yeastBp / 100.0);
   const oilWeight = flourWeight * (oilBP / 100.0);
 
-  let starterWeight;
-  let starterFlourWeight;
-  let starterWaterWeight;
+  let starterWeight = 0;
+  let starterFlourWeight = 0;
+  let starterWaterWeight = 0;
   let yeastWater = 0;
-  let starterYeastWeight;
+  let starterYeastWeight = 0;
 
   if (recipe.starterLevain) {
     starterFlourWeight = (yeastWeight * 100) / recipe.starterLevain;
@@ -224,16 +224,16 @@ export default function getRecipeRows({
       subtitle: "Dissolve yeast in water to activate prior to adding to dough.",
       rows: [
         {
-          item: "Water at 85°",
-          weightG: asGrams(yeastWater, 2),
-          bakersPercent: asBakersPercent((100 * yeastWater) / flourWeight),
-        },
-        {
           item: "Active Dry Yeast",
-          weightG: asGrams(yeastWeight - starterYeastWeight),
+          weightG: asGrams(yeastWeight - starterYeastWeight, 1),
           bakersPercent: asBakersPercent(
             ((yeastWeight - starterYeastWeight) / flourWeight) * 100
           ),
+        },
+        {
+          item: "Water at 85°",
+          weightG: asGrams(yeastWater),
+          bakersPercent: asBakersPercent((100 * yeastWater) / flourWeight),
         },
       ],
     };
@@ -273,6 +273,16 @@ export default function getRecipeRows({
       weightG: asGrams(yeastWater + yeastWeight - starterYeastWeight),
       bakersPercent: asBakersPercent(
         (100 * (yeastWater + yeastWeight - starterYeastWeight)) / flourWeight
+      ),
+    });
+  }
+
+  if (!yeastWater && starter !== Starter.Levain) {
+    finalRow.rows.push({
+      item: yeastType,
+      weightG: asGrams(yeastWeight - starterYeastWeight, 1),
+      bakersPercent: asBakersPercent(
+        ((yeastWeight - starterYeastWeight) / flourWeight) * 100
       ),
     });
   }
@@ -320,7 +330,7 @@ export default function getRecipeRows({
       starter !== Starter.Levain &&
         yeastWeight && {
           item: "Yeast",
-          weightG: asGrams(yeastWeight),
+          weightG: asGrams(yeastWeight, 1),
           bakersPercent: asBakersPercent((yeastWeight / flourWeight) * 100),
         },
       oilWeight && {
